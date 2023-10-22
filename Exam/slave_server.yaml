@@ -1,0 +1,36 @@
+# @format
+
+- name: Create Cron Job to Check Server Uptime
+  hosts: 127.0.0.1
+  become: "yes"
+
+  tasks:
+    - name: Create Cron Job
+      cron:
+        name: Check Server Uptime
+        job: uptime > /var/log/uptime.log
+        minute: 0
+        hour: 0
+      become_user: root
+
+- name: Execute Bash Script and Create Cron Job
+  hosts: 127.0.0.1
+  become: "yes"
+
+  tasks:
+    - name: Execute the shell script on the slave node
+      command: sh home/vagrant/lamp_stack.sh
+      register: script_output
+      ignore_errors: "yes"
+
+    - name: Execute the shell script on the slave node
+      command: sh home/vagrant/slave_configuration
+      register: script_output2
+      ignore_errors: "yes"
+
+    - name: Verify PHP Application Accessibility
+      uri:
+        url: 127.0.0.1
+        status_code: 200
+      ignore_errors: "yes"
+      register: php_app_check
